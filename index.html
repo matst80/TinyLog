@@ -1,0 +1,279 @@
+<!doctype html>  
+<html lang="en">  
+    <head>
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+        <style>
+            #flex {
+                display: flex;
+                
+            }
+            h1 {
+                font-weight: normal;
+            }
+            body {
+                background-color: #bdc3c7;
+                font-family: 'Roboto', sans-serif;
+            }
+            #log,#preview {
+                display: flex;
+                flex-basis: 100%;
+                overflow: auto;
+            }
+            #preview {
+                background-color: #fff;
+                margin-right: 15px;
+                margin-bottom: 15px;
+                margin-left: 15px;
+                padding: 15px;
+                box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            }
+            .entry {
+                max-height: 20px;
+                margin:2px;
+                background: #fefefe;
+                border-radius: 2px;
+                position: relative;
+                overflow: hidden;
+                position: relative;
+                padding:5px;
+                cursor: pointer;
+                text-overflow: ellipsis;
+                transition: max-height 0.5s ease-in-out;
+            }
+            ul, li {
+                margin:0;
+                padding:0;
+                list-style: none;
+                width: 100%;
+            }
+            .fade {
+                position: absolute;
+                background: linear-gradient(to bottom, rgba(255,255,255,0) 0%,#bdc3c7 100%); 
+                bottom:0;
+                left:0;
+                right:0;
+                height:8px;
+                z-index: 2;
+            }
+            .lvlsel {
+                padding:5px;
+                display: inline-block;
+                margin-right: 4px;
+                border-radius: 2px;
+            }
+            .lvl {
+                position: absolute;
+                border-radius: 2px;
+                top:4px;
+                right:18px;
+                font-size: 11px;
+                background: transparent;
+                color:#fff;
+                text-align: center;
+                padding:3px 5px;
+            }
+            .lvl0 {
+                background-color: white;
+                color:#000;
+            }
+            .lvl1 {
+                background-color: blue;
+                color:#fff;
+            }
+            .lvl2 {
+                background-color: yellow;
+                color:#000;
+            }
+            .lvl3 {
+                background-color: red;
+            }
+            .lvl4 {
+                background-color: #000;
+                color:#fff;
+            }
+            .lvl5 {
+                background: linear-gradient(to bottom, rgb(209, 171, 55) 0%, rgb(19, 116, 125) 100%);
+                color:#fff;
+            }
+            pre {
+                margin:0;
+                margin-left: 10px;
+            }
+            .entry:hover {
+                max-height: 300px;
+            }
+            .list-enter-active, .list-leave-active {
+                transition: all 1s;
+            }
+            .list-enter /* .list-leave-active below version 2.1.8 */ {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            .list-leave-to {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            #graph {
+                position: fixed;
+                z-index: 4;
+                bottom:30px;
+                right:50px;
+                
+                width:300px;
+                height:300px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>TinyLog</h1>
+        <canvas id="graph" width="300" height="300"></canvas>
+        <div id="app">
+            <div class="levelselector">
+                    <span v-for="(l,idx) in types" v-bind:class="['lvlsel','lvl'+idx]" v-on:click="loglevel=idx">{{l}}</span>
+            </div>
+            <div id="flex">
+                <div id="log">
+                    <transition-group name="list" tag="ul">
+                        <li v-for="l in log" class="entry" v-if="l.type>=loglevel" v-bind:key="l.id" v-on:click="lastmsg=l.data" v-bind:class="['entry', 'l'+l.type]">
+                            <div v-bind:class="['lvl', 'lvl'+l.type]">{{types[l.type]}}</div>
+                            <pre>{{l.data}}</pre>
+                            <div class="fade"></div>
+                        </li>
+                    </transition-group>
+                </div>
+                <div id="preview"><pre>{{lastmsg}}</pre></div>
+            </div>
+            
+        </div>
+        <div id="chartdiv"></div>																					
+        <script src="https://unpkg.com/vue"></script>
+        <script src="/socket.io/socket.io.js"></script>   
+        <script>
+            var socket = io();
+            var logdata = [];
+            var colors = ['#1abc9c','#2ecc71','#3498db','#9b59b6','#34495e'];
+
+            var app = new Vue({
+                el: '#app',
+                data: {
+                    types:[
+                        'Verbose',
+                        'Info',
+                        'Warn',
+                        'Error',
+                        'Critical',
+                        'FUBAR'
+                    ],
+                    loglevel:1,
+                    lastmsg:'',
+                    log:[{data:'Started webclient'}]
+                }
+            });
+
+            const MAXLEN = 100;
+            var intcounter = 0;
+
+            var c = document.getElementById("graph");
+            var ctx = c.getContext("2d");
+            
+
+            function drawGraph(old) {
+                ctx.clearRect(0, 0, graphLen, 300);
+                
+                maxval = 5;
+                for(var j=0;j<colors.length;j++) {
+                    for(var i=0;i<graphLen;i++) {
+                        var v = values[j][i];
+                        if (v==null) {
+                            console.log('not found ',v);
+                        }
+                        maxval = Math.max(v,maxval);
+                    }
+                }
+                console.log('draw',maxval);
+                for(var j=0;j<colors.length;j++) {
+                    ctx.beginPath();
+                    ctx.moveTo(0,300);
+                    for(var i=0;i<graphLen;i++) {
+                        //console.log((values[j][i]/maxval)*300);
+                        var v = 300-((values[j][i]/maxval)*300);
+                        if (!v && v!=0) {
+                            console.log('sklep');
+                        }
+                        ctx.lineTo(i,v);
+                    }
+                    ctx.strokeStyle = colors[j];
+                    ctx.stroke();
+                    if (!old) {
+                        values[j].shift();
+                        values[j].push(0);
+                    }
+                }
+                
+            }
+
+            var maxval = 5;
+            var now = new Date().getTime();
+            var values = [];
+            var graphLen = 5*60;
+            var TIMEDIFF = graphLen*1000;
+            for(var j=0;j<colors.length;j++) {
+                values.push([]);
+                for(var i=0;i<graphLen;i++) {
+                    values[j].push(0);
+                }
+            }
+
+            setInterval(function() { drawGraph(); },1000);
+
+            function addToGraph(v,ishistory) {
+                var dt = new Date(v.date).getTime();
+                
+                if (dt<(now-TIMEDIFF)) {
+                    // old values
+                }
+                else {
+                    //console.log('added value');
+                    var sec = Math.round((dt-now)/(1000));
+                    var j = v.type-1;
+                    var i = graphLen+Math.min(sec,-1);
+                    //console.log('adding',j,i);
+                    values[j][i]++;
+                    if (dt<now)
+                        drawGraph();
+                }
+            }
+
+            function appendToLog(l,old) {
+                l.map(function(v) {
+                    v.id = intcounter++;
+                    if (app.log.length>MAXLEN) {
+                        app.log.pop();
+                    }
+                    
+                    app.log.splice(0,0,v);
+                    addToGraph(v,old);
+                })
+            }
+
+            /*
+            setInterval(function() { 
+                var tp = Math.round(Math.random()*4)+1;
+                //console.log(tp);
+                addToGraph({
+                    date:new Date().toString(),
+                    type:tp
+                });
+            },100);
+            */
+
+            socket.on('log', function(d) {
+                appendToLog([d]);
+            });
+            socket.on('history', function(d) {
+                appendToLog(d,true);
+            });
+            socket.emit('auth','wEJg1EDYiy');
+        </script>         
+    </body>
+</html>
