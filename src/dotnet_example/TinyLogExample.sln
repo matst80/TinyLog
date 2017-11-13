@@ -1,0 +1,23 @@
+
+Microsoft Visual Studio Solution File, Format Version 15.00
+# Visual Studio 2017
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyLog", "..\dotnet_client\TinyLog.csproj", "{4FA13C03-E89D-4748-BAF0-5BF6C6CD8B1D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyStressTest", "TinyStressTest\TinyStressTest.csproj", "{AF7AF6FD-C9A8-4C67-A43E-2459BEA4A4BD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4FA13C03-E89D-4748-BAF0-5BF6C6CD8B1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4FA13C03-E89D-4748-BAF0-5BF6C6CD8B1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4FA13C03-E89D-4748-BAF0-5BF6C6CD8B1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4FA13C03-E89D-4748-BAF0-5BF6C6CD8B1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF7AF6FD-C9A8-4C67-A43E-2459BEA4A4BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF7AF6FD-C9A8-4C67-A43E-2459BEA4A4BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF7AF6FD-C9A8-4C67-A43E-2459BEA4A4BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF7AF6FD-C9A8-4C67-A43E-2459BEA4A4BD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

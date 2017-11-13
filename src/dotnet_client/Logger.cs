@@ -12,6 +12,8 @@ namespace TinyLog
 {
     public class Logger
     {
+        private const int MAX_QUEUE_LENGTH = 100;
+
         private static Logger _instance = new Logger();
         private readonly List<byte[]> _queue = new List<byte[]>();
         private System.Threading.Timer _timer;
@@ -91,10 +93,11 @@ namespace TinyLog
             }
 
             _queue.Add(message);
-
+            //if (_queue.Count() > MAX_QUEUE_LENGTH)
+              //  Internal_Send();
             if(_timer != null)
             {
-                _timer.Change(_config.BatchDelay, 0);
+                _timer.Change(_queue.Count() > MAX_QUEUE_LENGTH?1:_config.BatchDelay, 0);
 			}
             else
             {
@@ -104,6 +107,7 @@ namespace TinyLog
         }
 
         private readonly byte[] ENDSUBMISSTION = Encoding.UTF8.GetBytes("<EOF>");
+
 
         private async Task Internal_Send()
         {
